@@ -367,9 +367,12 @@ summary {
 
 </div>
 
+<div id="TOC">
+<ul>
+<li><a href="#standard-pre-processing-workflow">Standard Pre-Processing Workflow</a></li>
+</ul>
+</div>
 
-<pre class="r"><code>#Install Dependencies
-library(dplyr)</code></pre>
 <pre><code>## Warning: package 'dplyr' was built under R version 3.6.2</code></pre>
 <pre><code>## 
 ## Attaching package: 'dplyr'</code></pre>
@@ -379,12 +382,10 @@ library(dplyr)</code></pre>
 <pre><code>## The following objects are masked from 'package:base':
 ## 
 ##     intersect, setdiff, setequal, union</code></pre>
-<pre class="r"><code>library(Seurat)</code></pre>
 <pre><code>## Warning: package 'Seurat' was built under R version 3.6.2</code></pre>
 <pre><code>## Registered S3 method overwritten by 'spatstat':
 ##   method     from
 ##   print.boxx cli</code></pre>
-<pre class="r"><code>library(patchwork)</code></pre>
 <pre><code>## Warning: package 'patchwork' was built under R version 3.6.2</code></pre>
 <pre class="r"><code># Load the PBMC dataset
 pbmc.data &lt;- Read10X(data.dir = &quot;filtered_gene_bc_matrices/hg19/&quot;)
@@ -392,11 +393,20 @@ pbmc.data &lt;- Read10X(data.dir = &quot;filtered_gene_bc_matrices/hg19/&quot;)
 pbmc &lt;- CreateSeuratObject(counts = pbmc.data, project = &quot;pbmc3k&quot;, min.cells = 3, min.features = 200)</code></pre>
 <pre><code>## Warning: Feature names cannot have underscores ('_'), replacing with dashes
 ## ('-')</code></pre>
-<pre class="r"><code>pbmc</code></pre>
-<pre><code>## An object of class Seurat 
-## 13714 features across 2700 samples within 1 assay 
-## Active assay: RNA (13714 features, 0 variable features)</code></pre>
-<p>Standard Pre-Processing Workflow</p>
+<pre class="r"><code>dim(pbmc)</code></pre>
+<pre><code>## [1] 13714  2700</code></pre>
+<div id="standard-pre-processing-workflow" class="section level1">
+<h1>Standard Pre-Processing Workflow</h1>
+<p>Selection and filtration of cells based on QC metrics, data normalization and scaling, and detection of highly variable features. <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4758103/">Common QC Merics</a><br />
+1. Number of unique genes detected in each cell<br />
++ Low-quality cells or empty droplets will often have very few genes<br />
++ Cell doublets or multiplets may exhibit an aberrantly high gene count<br />
+2. Total number of molecules detected within a cell (correlates strongly with unique genes)<br />
+3. Percentage of reads that map to the mitochondrial genome<br />
++ Low-quality / dying cells often exhibit extensive mitochondrial contamination<br />
++ Calculate mitochondrial QC metrics with the PercentageFeatureSet function, which calculates the percentage of counts originating from a set of features<br />
++ Use the set of all genes starting with MT- as a set of mitochondrial genes</p>
+</div>
 
 
 

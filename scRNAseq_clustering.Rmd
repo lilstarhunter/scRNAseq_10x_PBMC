@@ -1,12 +1,10 @@
 ---
 title: "10x scRNAseq Analysis - PBMC"
 author: "Lauren Stein"
-output:
-  html_document:
-    toc: TRUE
+runtime: shiny
 
 ---
-```{r}
+```{r echo=FALSE}
 #Install Dependencies
 library(dplyr)
 library(Seurat)
@@ -17,8 +15,42 @@ library(patchwork)
 pbmc.data <- Read10X(data.dir = "filtered_gene_bc_matrices/hg19/")
 # Initialize the Seurat object with the raw (non-normalized data).
 pbmc <- CreateSeuratObject(counts = pbmc.data, project = "pbmc3k", min.cells = 3, min.features = 200)
-pbmc
+dim(pbmc)
 ```
-## Standard Pre-Processing Workflow
 
+# Standard Pre-Processing Workflow
+Selection and filtration of cells based on QC metrics, data normalization and scaling, and detection of highly variable features.  
+[Common QC Merics](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4758103/)   
+
+1. Number of unique genes detected in each cell
+    + Low-quality cells or empty droplets will often have very few genes  
+    + Cell doublets or multiplets may exhibit an aberrantly high gene count  
+2. Total number of molecules detected within a cell (correlates strongly with unique genes)
+3. Percentage of reads that map to the mitochondrial genome
+    + Low-quality / dying cells often exhibit extensive mitochondrial contamination  
+    + Calculate mitochondrial QC metrics with the PercentageFeatureSet function, which calculates the percentage of counts originating from a set of features  
+    + Use the set of all genes starting with MT- as a set of mitochondrial genes  
+
+```{r}
+# The [[ operator can add columns to object metadata. This is a great place to stash QC stats
+pbmc[["percent.mt"]] <- PercentageFeatureSet(pbmc, pattern = "^MT-")
+
+#Show QC metrics for the first 5 cells with additional column
+head(pbmc@meta.data, 5)
+```
+
+## Visualize QC Metrics
+```{r}
+# Visualize QC metrics as a violin plot
+VlnPlot(pbmc, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
+```
+
+```{r}
+# FeatureScatter is typically used to visualize feature-feature relationships, but can be used
+# for anything calculated by the object, i.e. columns in object metadata, PC scores etc.
+
+plot1 <- FeatureScatter(pbmc, feature1 = "nCount_RNA", feature2 = "percent.mt")
+plot2 <- FeatureScatter(pbmc, feature1 = "nCount_RNA", feature2 = "nFeature_RNA")
+plot1 + plot2
+```
 
