@@ -125,16 +125,92 @@ VizDimLoadings(pbmc, dims = 1:2, reduction = "pca")
 # 3. Plot PCA results
 DimPlot(pbmc, reduction = "pca")
 ```
-* Heatmap of PCA results is a great way to explore primary sourcs of heteorgenity in the dataset
-* Aid in deciding which PCs to include for further downstream analysis 
-* Cells and features are ordered according to their PCA score 
-* add `cells` argument to plot specify '**extreme cells**' on both ends of specture. Speeds up processing for very large datasets 
-* Tool for exploring correlated feature sets
+  * Heatmap of PCA results is a great way to explore primary sourcs of heteorgenity in the dataset
+  * Aid in deciding which PCs to include for further downstream analysis 
+  * Cells and features are ordered according to their PCA score 
+  * add `cells` argument to plot specify '**extreme cells**' on both ends of specture. Speeds up processing for very large datasets 
+  * Tool for exploring correlated feature sets
+  
 ```{r}
 # 4. Heatmaps of PCA results
 DimHeatmap(pbmc, dims = 1, cells = 500, balanced = TRUE)
 ```
 ```{r}
 DimHeatmap(pbmc, dims = 1:15, cells = 500, balanced = TRUE)
+```
+
+# Determine the dimensionality of the dataset
+* Seurat clusters cells based on PCA scores
+    + Overcome the extensive technical noise in any single feature for scRNA-seq data
+    + Each PC essentially representing a 'metafeature' that combines information across a correlated feature set.
+    + Top PC represent a robust compression of the dataset. 
+
+*How many componenets should we choose to include? 10? 20? 100?*  
+
+* [Macosko et al](https://www.cell.com/fulltext/S0092-8674(15)00549-8), implemented a resampling test inspired by the JackStraw procedure. 
+    + Randomly permute a subset of the data (1% by default) and rerun PCA, constructing a 'null distribution' of feature scores, and repeat this procedure. 
+    + Identify 'significant' PCs as those who have a strong enrichment of low p-value features.
+```{r}
+# NOTE: This process can take a long time for big datasets, comment out for expediency. More
+# approximate techniques such as those implemented in ElbowPlot() can be used to reduce
+# computation time
+pbmc <- JackStraw(pbmc, num.replicate = 100)
+pbmc <- ScoreJackStraw(pbmc, dims = 1:20)
+```
+    
+* `JackStrawPlot` visualization tool for comparing the distribution of p-values for each PC with a uniform distribution (dashed line)
+    + 'Significant' PCs will show a strong enrichment of features with low p-values (solid curve above the dashed line)
+```{r warning=FALSE}
+JackStrawPlot(pbmc, dims = 1:15)
+```
+
+  
+* `ElbowPlot`ranking of PCs based on the percentage of variance explained by each one
+```{r}
+ElbowPlot(pbmc)
+```
+
+## Dimensionality Best Practices
+Identifying true dimentionality is challenging! Really an art-form  
+  1. Supervised exploration of PCs to determine relevant sources of heterogeneity, and used in conjunction with GSEA (for example)
+  2.  Implements a statistical test based on a random null model. Time-consuming for large datasets and may not return a clear PC cutoff
+  3. Repeat downstrem analysis with different PCs and determine whether the results differ significantly (they shouldn't)
+  4. Err on the *higher* side when choosing a parameter
+  
+# Clustering
+Seurat v3 is a graph-based clustering approach using **distance metric**driving analysis (based on previously identified PCs) is the same
+  * References for new clustering approaches [scRNA-seq data](https://academic.oup.com/bioinformatics/article/31/12/1974/214505) and [CyTOF data](https://pubmed.ncbi.nlm.nih.gov/26095251/)
+  * **K-nearest neighbor** clustering with based on similar feature expression patterns then partition into highly interconnected 'quasicliques' or 'communities'
+  1. `FindNeighbors` function: KNN based on euclidean distance in PCA space then apply Jaccard similarity to refine edge weights between any two cells based on shared overlap within local neighborhood. Input is the prevedinied dimensionality of the dataset (first 10 PCs)
+  2. `FindClusters`: Optimize the standard modularity function that applies modularity optimization techniques (Louvain algorithm - default, or SLM) to iteratively group cels together.
+    +  resolution parameter sets granularity of downsteram function - incr values = greater number of clusters
+    +  good starting point 0.4 to 1.2 for a dataset around 3K cells in which optimal resolution increases for larger datasets
+    +  `Idents` function to find clusters
+
+```{r}
+pbmc <- FindNeighbors(pbmc, dims = 1:10)
+pbmc <- FindClusters(pbmc, resolution = 0.5)
+```
+```{r}
+# Look at cluster IDs of the first 5 cells
+head(Idents(pbmc), 5)
+```
+
+# Run non-linear dimensional reduciton (UMAP/tSNE)
+Seurat offers several non-linear dimensional reduction techniques, such as tSNE and UMAP, to visualize and explore these datasets. The goal of these algorithms is to learn the underlying manifold of the data in order to place similar cells together in low-dimensional space. Cells within the graph-based clusters determined above should co-localize on these dimension reduction plots. As input to the UMAP and tSNE, we suggest using the same PCs as input to the clustering analysis.
+
+```{r}
+# If UMAP not installed use 
+# reticulate::py_install(packages ='umap-learn')
+pbmc <- RunUMAP(pbmc, dims = 1:10)
+```
+```{r}
+# note set `label = TRUE` or use the LabelClusters function to help label
+# individual clusters
+DimPlot(pbmc, reduction = "umap", label = TRUE)
+```
+```{r}
+# Save file 
+saveRDS(pbmc, file = "pbmc_results.rds")
 ```
 
