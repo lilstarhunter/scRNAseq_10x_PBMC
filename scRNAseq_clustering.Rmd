@@ -4,7 +4,7 @@ author: "Lauren Stein"
 runtime: shiny
 
 ---
-```{r echo=FALSE}
+```{r echo=FALSE, warning=FALSE}
 #Install Dependencies
 library(dplyr)
 library(Seurat)
@@ -46,11 +46,95 @@ VlnPlot(pbmc, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3
 ```
 
 ```{r}
-# FeatureScatter is typically used to visualize feature-feature relationships, but can be used
+# FeatureScatter  used to visualize feature-feature relationships, but can be used
 # for anything calculated by the object, i.e. columns in object metadata, PC scores etc.
 
 plot1 <- FeatureScatter(pbmc, feature1 = "nCount_RNA", feature2 = "percent.mt")
 plot2 <- FeatureScatter(pbmc, feature1 = "nCount_RNA", feature2 = "nFeature_RNA")
 plot1 + plot2
+```
+
+```{r}
+# Create a subset of the data with unique feature counts >2500 or less than 200 and less than 5% mitochondrial counts
+pbmc <- subset(pbmc, subset = nFeature_RNA > 200 & nFeature_RNA < 2500 & percent.mt < 5)
+```
+
+## Normalize the Data
+Apply a global-scaling normalization method "LogNormalize":normalizes the feature expression measurements for each cell by the total expression, multiplies this by a scale factor (10,000 by default), and log-transforms the result.  
+**Normalized values are stored in `pbmc[["RNA"]]@data`**
+```{r}
+#Default values provided aka pbmc <- NormalizeData(pbmc)
+pbmc <- NormalizeData(pbmc, normalization.method = "LogNormalize", scale.factor = 10000)
+```
+
+## Identify highly variable features **feature selection**  
+* Calculate subset of features with high cell-to-cell variation
+    + Enables easier detection of biological signal-to-noise ration [ref](https://www.nature.com/articles/nmeth.2645)
+    + Utilizes the `FindVariableFeatures` Function
+    + Seurat3 procedure directly models the mean-variance relationship inherent in single-cell data [ref](https://www.biorxiv.org/content/early/2018/11/02/460147.full.pdf)
+    + Default returns 2,000 features per dataset ()
+```{r}
+pbmc <- FindVariableFeatures(pbmc, selection.method = "vst", nfeatures = 2000)
+
+# Identify the 10 most highly variable genes
+top10 <- head(VariableFeatures(pbmc), 10)
+
+# plot variable features with and without labels
+plot1 <- VariableFeaturePlot(pbmc)
+plot2 <- LabelPoints(plot = plot1, points = top10, repel = TRUE, xnudge = 0, ynudge = 0)
+plot1 + plot2
+```
+
+## Scaling the data
+
+* Apply linear transformation using the `ScaleData` function
+    + Standard preprocessing **prior** to dimensional reduction technique
+    + Shifts gene expression so **mean** expression across cells is 0
+    + Scales gene expression so **variance** across cells is 1 *equal weight in downstream analysis, prevents highly expressed genes from skewing the analysis*
+    + results stored in `pbmc[["RNA"]]@scale.data`.
+* Important Notes 
+    + Scaling is only necessary for genes used as **input** for dimensional reduction
+    + To scale on previously identified variable features (2,000 by default) remove `features` from syntax
+    + Problematic approach for Seurat heatmaps via `DoHeatmap` becuase some genes may **not** be scaled 
+    
+```{r}
+all.genes <- rownames(pbmc)
+pbmc <- ScaleData(pbmc, features = all.genes)
+```
+
+## Perform Linear Dimensional Reduction
+Dimensionality reduction refers to techniques that reduce the number of input variables in a dataset. More input features often make a modeling task more challenging to model, more generally referred to as the curse of dimensionality. Allows for effective noise removal and facilitate many downstream analyses that include cell clustering and lineage reconstruction.  
+
+* Principal Component Analysis (PAC): Data preparation technique to create a projection of a dataset prior to fitting a model *Linear Discriment Analysis (LDA) alternative methodology not used here*
+![PAC](https://miro.medium.com/max/1024/1*vfLvJF8wHaQjDaWv6Mab2w.png)
+* input = previously determined variable features
+    + use `features` argument to choose a different subset
+* Seurat provides multiple ways to visualize cells and features that **define** the PCA such as `VizDimReduction`, `DimPlot`, `DimHeatmap`
+```{r}
+# Perform PCA on dataset 
+pbmc <- RunPCA(pbmc, features = VariableFeatures(object = pbmc))
+
+# 1. Examine PCA Results
+print(pbmc[["pca"]], dims = 1:5, nfeatures = 5)
+```
+```{r}
+# 2. Visualize PCA results
+VizDimLoadings(pbmc, dims = 1:2, reduction = "pca")
+```
+```{r}
+# 3. Plot PCA results
+DimPlot(pbmc, reduction = "pca")
+```
+* Heatmap of PCA results is a great way to explore primary sourcs of heteorgenity in the dataset
+* Aid in deciding which PCs to include for further downstream analysis 
+* Cells and features are ordered according to their PCA score 
+* add `cells` argument to plot specify '**extreme cells**' on both ends of specture. Speeds up processing for very large datasets 
+* Tool for exploring correlated feature sets
+```{r}
+# 4. Heatmaps of PCA results
+DimHeatmap(pbmc, dims = 1, cells = 500, balanced = TRUE)
+```
+```{r}
+DimHeatmap(pbmc, dims = 1:15, cells = 500, balanced = TRUE)
 ```
 
