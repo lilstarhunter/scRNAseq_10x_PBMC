@@ -210,7 +210,73 @@ pbmc <- RunUMAP(pbmc, dims = 1:10)
 DimPlot(pbmc, reduction = "umap", label = TRUE)
 ```
 ```{r}
-# Save file 
+# Save R object to file 
 saveRDS(pbmc, file = "pbmc_results.rds")
+```
+
+# Differential Expression via Cluster Biomarkers
+Seurat finds markers that **define** clusters via differential expression. Identifies positive and negatie markers of a single cluster (specified in `indent.1`) compared to all other cells. 
+  * `FindAllMarkers`: automate process for all clusters and test groups of clusters vs. each other or against all cells
+  * `min.pct` argument: detect minimum percentage in either of the two groups of cells
+  * `thresh.test` argument: requires a feature to be differentially expressed (on average) by some threshold between the two groups. user defined
+  *Note: setting min.pct and thresh.test to 0 is allowed but time intensive b/c it tests a large number of features that are unlikely to be highly discriminatory*
+  * `max.cells.per.ident`: Downsamples each identify class to have no more cell than set threshold. Decreases time and most highly expressed features revealed at the top but the trade-off is power
+  
+  **[Differential Expression Testing](https://satijalab.org/seurat/v3.0/de_vignette.html) reveiw vignette** 
+```{r}
+# find all markers of cluster 1
+cluster1.markers <- FindMarkers(pbmc, ident.1 = 1, min.pct = 0.25)
+head(cluster1.markers, n = 5)
+```
+```{r}
+# find all markers distinguishing cluster 5 from clusters 0 and 3
+cluster5.markers <- FindMarkers(pbmc, ident.1 = 5, ident.2 = c(0, 3), min.pct = 0.25)
+head(cluster5.markers, n = 5)
+```
+```{r}
+# find markers for every cluster compared to all remaining cells, report only the positive ones
+pbmc.markers <- FindAllMarkers(pbmc, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25)
+pbmc.markers %>% group_by(cluster) %>% top_n(n = 2, wt = avg_logFC)
+```
+  *  `test.use` parameter: specify test 
+      +  “wilcox” : Wilcoxon rank sum test (default)
+      +  "bimod” : Likelihood-ratio test for single cell feature expression, (McDavid et al., Bioinformatics, 2013)
+      +  “roc” : Standard AUC classifier
+      +  “t” : Student’s t-test
+      +  “poisson” : Likelihood ratio test assuming an underlying negative binomial distribution. Use only for UMI-based datasets
+      +  “negbinom” : Likelihood ratio test assuming an underlying negative binomial distribution. Use only for UMI-based datasets
+      +  “LR” : Uses a logistic regression framework to determine differentially expressed genes. Constructs a logistic regression model predicting group membership based on each feature individually and compares this to a null model with a likelihood ratio test.
+      +  “MAST” : GLM-framework that treates cellular detection rate as a covariate (Finak et al, Genome Biology, 2015) (Installation instructions)
+      +  “DESeq2” : DE based on a model using the negative binomial distribution (Love et al, Genome Biology, 2014) (Installation instructions)
+
+## Visualize differential Expression
+
+**`VlnPlot`**:shows expression probability distributions across clusters
+**`FeaturePlot`**:visualizes feature expression on a tSNE or PCA plot clusters
+**`RidgePlot`** or **`CellScatter`** or **`DotPlot`**
+**`DoHeatmap`**: generate expression heatmap for given cells and features for each cluster 
+```{r}
+VlnPlot(pbmc, features = c("MS4A1", "CD79A"))
+```
+```{r}
+# Plot raw counts using slot parameter
+VlnPlot(pbmc, features = c("NKG7", "PF4"), slot = "counts", log = TRUE)
+```
+```{r}
+FeaturePlot(pbmc, features = c("MS4A1", "GNLY", "CD3E", "CD14", "FCER1A", "FCGR3A", "LYZ", "PPBP", 
+    "CD8A"))
+```
+```{r}
+top10 <- pbmc.markers %>% group_by(cluster) %>% top_n(n = 10, wt = avg_logFC)
+DoHeatmap(pbmc, features = top10$gene) + NoLegend()
+```
+
+## Assign cell type markers to clusters
+```{r}
+new.cluster.ids <- c("Naive CD4 T", "Memory CD4 T", "CD14+ Mono", "B", "CD8 T", "FCGR3A+ Mono", 
+    "NK", "DC", "Platelet")
+names(new.cluster.ids) <- levels(pbmc)
+pbmc <- RenameIdents(pbmc, new.cluster.ids)
+DimPlot(pbmc, reduction = "umap", label = TRUE, pt.size = 0.5) + NoLegend()
 ```
 
