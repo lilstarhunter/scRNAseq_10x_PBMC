@@ -1,7 +1,7 @@
 # Single-cell RNASeq Analysis - Peripheral Blood Mononuclear Cells
 ## 10X Genomics - Seurat Tutorial
 
-**Objective:**: Utilize the Seurat R Toolkit to analyze PBMC to identify distinct cell populations and explore differential expression
+**Objective:** Utilize the Seurat R Toolkit to analyze PBMC to identify distinct cell populations and explore differential expression
 
 <img src="https://d2ygg2jwuhi4sz.cloudfront.net/wp/wp-content/uploads/2018/12/AdobeStock_208548494-1200x480.jpeg">
 
