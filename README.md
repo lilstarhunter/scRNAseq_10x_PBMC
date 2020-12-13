@@ -21,9 +21,6 @@
 **Violin Plot of Features, Counts, and Mitochondrial Percentage**
 <img src="/images/vinplot_init.png">
 
-**Violin Plot of Features, Counts, and Mitochondrial Percentage**
-<img src="/images/vinplot_init.png">
-
 **Compare Features via ScatterPlot**
 <img src="/images/featurescatter_pct.mt_nFeat.png">
 
@@ -33,7 +30,7 @@ log(total expression x scale factor (10,000 by default))
 
 ### Perform Feature Selection
 Minimize biological signal-to-noise ratio via `FindVariableFeatures`
-<img src="/images/variablefeaturecounts.png>
+<img src="/images/variablefeaturecounts.png">
 
 ### Scale Data
 Linear transformation using `ScaleData`
@@ -52,7 +49,7 @@ Seurat provides a `FindNeighbors`and `FindClusters`to determine clusters based o
 <img src = "images/dimplot_umap_labeled.png">
 
 ### Differential Expression Testing
-<img src="cluster_heatmap.png">
+<img src="/images/cluster_heatmap.png">
 
 Labeled UMAP with Cell types based on cell-specific markers
 <img src = "images/label_cluster_UMAP.png">
