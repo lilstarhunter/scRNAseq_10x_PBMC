@@ -36,7 +36,7 @@ Minimize biological signal-to-noise ratio via `FindVariableFeatures`
 Linear transformation using `ScaleData`
 
 ## Step 3: Linear Dimensional Reduction
-Principle component Analysis (PAC) methodology applied here
+- Principle component Analysis (PAC) methodology applied here
 <img src = "images/dimplot_pca.png">
 
 ### Determine the dimensionality of the dataset
