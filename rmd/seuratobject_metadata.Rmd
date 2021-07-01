@@ -6,7 +6,9 @@ library(Seurat)
 
 ```{r}
 # Load the PBMC dataset
-pbmc.data <- Read10X(data.dir = "filtered_gene_bc_matrices/hg19/")
+# local laptop data directory = /Users/laurenstein/Desktop/local_data/scRNAseq_10x_PBMC/
+
+pbmc.data <- Read10X(data.dir = "/Users/laurenstein/Desktop/local_data/scRNAseq_10x_PBMC/data/filtered_gene_bc_matrices/hg19")
 ```
 
 ```{r}
@@ -43,7 +45,7 @@ pbmc@meta.data
 ```{r}
                            
 # Create .RData object to load at any time
-saveRDS(pbmc, file="data/pbmc_filtered_seurat.rds")
+saveRDS(pbmc, file="/Users/laurenstein/Desktop/local_data/scRNAseq_10x_PBMC/data/pbmc_filtered_seurat.rds")
 ```
 
 
