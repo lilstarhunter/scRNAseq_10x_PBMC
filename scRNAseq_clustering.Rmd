@@ -4,12 +4,14 @@ author: "Lauren Stein"
 runtime: shiny
 
 ---
-```{r echo=FALSE, warning=FALSE}
-#Install Dependencies
+```{r}
+library(Matrix)
 library(dplyr)
 library(Seurat)
-library(patchwork)
+library(ggplot2)
 ```
+
+Read in Files
 ```{r}
 # Load the PBMC dataset
 pbmc.data <- Read10X(data.dir = "filtered_gene_bc_matrices/hg19/")
