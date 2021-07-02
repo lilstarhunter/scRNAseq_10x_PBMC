@@ -46,3 +46,60 @@ DimPlot(filtered_phase_pmbc,
         split.by = "Phase")
 ```
 No major differences due to cell cycle phase, no need to regress out
+
+```{r}
+options(future.globals.maxSize = 4000 * 1024^2)
+```
+
+```{r}
+  filtered_phase_pmbc <- NormalizeData(filtered_phase_pmbc, verbose = TRUE)
+  filtered_phase_pmbc <- CellCycleScoring(filtered_phase_pmbc, g2m.features = g2m_genes, s.features = s_genes)
+  filtered_phase_pmbc <- SCTransform(filtered_phase_pmbc, vars.to.regress = c("mitoRatio"))
+
+```
+
+```{r}
+# These are now standard steps in the Seurat workflow for visualization and clustering
+filtered_phase_pmbc <- RunPCA(filtered_phase_pmbc, verbose = FALSE)
+filtered_phase_pmbc <- RunUMAP(filtered_phase_pmbc, dims = 1:10, verbose = FALSE)
+
+filtered_phase_pmbc <- FindNeighbors(filtered_phase_pmbc, dims = 1:10, verbose = FALSE)
+filtered_phase_pmbc <- FindClusters(filtered_phase_pmbc, verbose = FALSE)
+DimPlot(filtered_phase_pmbc, label = TRUE) + NoLegend()
+
+# Single line code
+# pbmc <- CreateSeuratObject(pbmc_data) %>% PercentageFeatureSet(pattern = "^MT-", col.name = "percent.mt") %>% SCTransform(vars.to.regress = "percent.mt") %>% RunPCA() %>% FindNeighbors(dims = 1:30) %>% RunUMAP(dims = 1:30) %>% FindClusters()
+```
+```{r}
+VlnPlot(filtered_phase_pmbc, features = c("CD8A", "CD45", "Gfral", "Gdf15", "TGF", "NAG", "SBF", "MIC-", "MIC-1", "NAG-1"), 
+    pt.size = 0.2)
+```
+
+```{r}
+# Visualize canonical marker genes on the sctransform embedding.
+FeaturePlot(filtered_phase_pmbc, features = c("CD8A", "CD123", "CD11b","MARCO", "GFRAL", "GDF15", "TGF", "Gfral", "GDF-15", "NOC2L"), pt.size = 0.2)
+```
+
+```{r}
+# Visualize canonical marker genes on the sctransform embedding fro GRANULOCYTE.
+FeaturePlot(filtered_phase_pmbc, features = c("CD16", "CD45R", "CD93", "CD11", "MARCO", "CD11c", "CD24", "CD43"), pt.size = 0.2, 
+    ncol = 3)
+```
+
+```{r}
+# Determine metrics to plot present in seurat_integrated@meta.data
+metrics <-  c("nCount_RNA", "nFeature_RNA", "S.Score", "G2M.Score", "mitoRatio")
+
+FeaturePlot(filtered_phase_pmbc, 
+            reduction = "umap", 
+            features = metrics,
+            pt.size = 0.4, 
+            sort.cell = TRUE,
+            min.cutoff = 'q10',
+            label = TRUE)
+```
+
+```{r}
+
+```
+
