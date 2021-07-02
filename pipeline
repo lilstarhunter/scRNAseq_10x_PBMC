@@ -1,0 +1,14 @@
+Pipeline
+
+Not included:
+  Cell Ranger to demultiplex, align genome, and quantification
+  
+  
+STEP 1: Quality Control
+DoubletDecon 
+output:
+
+SoupX
+output:
+
+Seurat

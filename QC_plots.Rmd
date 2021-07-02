@@ -1,0 +1,118 @@
+---
+title: "Quality Control Analysis"
+output: html_notebook
+---
+```{r}
+library(Matrix)
+library(dplyr)
+library(Seurat)
+library(ggplot2)
+```
+
+```{r}
+# Import file
+pbmc2 <- readRDS("/Users/laurenstein/Desktop/local_data/scRNAseq_10x_PBMC/data/pbmc_filtered_seurat.rds")
+pbmc2
+```
+
+```{r}
+metadata <- pbmc2@meta.data
+```
+
+Expected number of cells vs. actual number of cells
+Expected: 2700 
+Actual: 2700
+
+```{r}
+# Rename columns
+metadata <- metadata %>%
+        dplyr::rename(seq_folder = orig.ident,
+                      nUMI = nCount_RNA,
+                      nGene = nFeature_RNA,
+                      mitoRatio = mitoRatio)
+```
+
+```{r}
+# Visualize the number UMIs/transcripts per cell
+#Indicates how deeply sequenced the samples were
+metadata %>% 
+  	ggplot(aes(x=nUMI)) + 
+    geom_histogram(aes(y=..density..), color = "black", fill = "white") +
+  	geom_density(alpha = 0.2, fill = "purple") + 
+  	scale_x_log10() + 
+  	theme_classic() +
+  	ylab("Cell density") +
+  	geom_vline(xintercept = 500)
+
+ggsave("/Users/laurenstein/Desktop/code-a-rama/scRNAseq_10x_PBMC/plots/QC/UMIperCell.png")
+```
+
+```{r}
+# Visualize the distribution of genes detected per cell via histogram
+metadata %>% 
+  	ggplot(aes(x=nGene)) + 
+  	geom_histogram(aes(y=..density..), color = "black", fill = "white") +
+  	geom_density(alpha = 0.2, fill = "purple") + 
+  	theme_classic() +
+  	scale_x_log10() + 
+  	geom_vline(xintercept = 300)
+
+ggsave("/Users/laurenstein/Desktop/code-a-rama/scRNAseq_10x_PBMC/plots/QC/GenesperCell.png")
+```
+
+```{r}
+# Visualize the distribution of genes detected per cell via boxplot
+metadata %>% 
+  	ggplot(aes(y=log10(nGene))) + 
+  	geom_boxplot() + 
+  	theme_classic() +
+  	theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+  	theme(plot.title = element_text(hjust=0.5, face="bold")) +
+  	ggtitle("NCells vs NGenes")
+
+ggsave("/Users/laurenstein/Desktop/code-a-rama/scRNAseq_10x_PBMC/plots/QC/GenesperCell_Boxplot.png")
+```
+
+```{r}
+# Visualize the distribution of mitochondrial gene expression detected per cell
+metadata %>% 
+  	ggplot(aes(x=percent.mt)) + 
+  	geom_histogram(aes(y=..density..), color = "black", fill = "white") +
+  	geom_density(alpha = 0.2, fill = "purple") + 
+  	scale_x_log10() + 
+  	theme_classic() +
+  	geom_vline(xintercept = 0.2)
+
+ggsave("/Users/laurenstein/Desktop/code-a-rama/scRNAseq_10x_PBMC/plots/QC/MitoperCell.png")
+```
+
+```{r}
+# Visualize the overall complexity of the gene expression by visualizing the genes detected per UMI 
+# Look into novelty score, reference states it should be about 0.8
+metadata %>%
+  	ggplot(aes(x=log10GenesPerUMI)) +
+  	geom_density(alpha = 0.2) +
+  	theme_classic() +
+  	geom_vline(xintercept = 0.8)
+
+ggsave("/Users/laurenstein/Desktop/code-a-rama/scRNAseq_10x_PBMC/plots/QC/GenesperUMI.png")
+```
+MULTIVARIATE QC ANALYSIS
+```{r}
+# Visualize the correlation between genes detected and number of UMIs and determine whether strong presence of cells with low numbers of genes/UMIs
+metadata %>% 
+  	ggplot(aes(x=nUMI, y=nGene, color=mitoRatio)) + 
+  	geom_point() + 
+	  scale_colour_gradient(low = "purple", high = "yellow") +
+  	stat_smooth(method=lm) +
+  	scale_x_log10() + 
+  	scale_y_log10() + 
+  	theme_classic() +
+  	geom_vline(xintercept = 500) +
+  	geom_hline(yintercept = 250)
+ggsave("/Users/laurenstein/Desktop/code-a-rama/scRNAseq_10x_PBMC/plots/QC/GenesCorrUMI.png")
+
+```
+
+
+
