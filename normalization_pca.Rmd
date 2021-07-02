@@ -1,0 +1,48 @@
+```{r}
+# Load libraries
+library(Seurat)
+library(tidyverse)
+library(RCurl)
+library(cowplot)
+```
+
+```{r}
+# Normalize for cell cycle
+filtered_phase_pmbc <- NormalizeData(filtered_pbmc)
+```
+
+```{r}
+# Load cell cycle markers
+load("data/cycle.rda")
+
+# Score cells for cell cycle
+filtered_phase_pmbc <- CellCycleScoring(filtered_phase_pmbc, 
+                                 g2m.features = g2m_genes, 
+                                 s.features = s_genes)
+
+# View cell cycle scores and phases assigned to cells                                 
+View(filtered_phase_pmbc@meta.data)    
+```
+
+```{r}
+# Identify the most variable genes
+filtered_phase_pmbc <- FindVariableFeatures(filtered_phase_pmbc, 
+                     selection.method = "vst",
+                     nfeatures = 2000, 
+                     verbose = FALSE)
+		     
+# Scale the counts
+filtered_phase_pmbc <- ScaleData(filtered_phase_pmbc)
+```
+
+```{r}
+# Perform PCA
+filtered_phase_pmbc <- RunPCA(filtered_phase_pmbc)
+
+# Plot the PCA colored by cell cycle phase
+DimPlot(filtered_phase_pmbc,
+        reduction = "pca",
+        group.by= "Phase",
+        split.by = "Phase")
+```
+No major differences due to cell cycle phase, no need to regress out
