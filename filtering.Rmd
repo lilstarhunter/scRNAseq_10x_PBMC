@@ -137,4 +137,3 @@ ggsave("/Users/laurenstein/Desktop/code-a-rama/scRNAseq_10x_PBMC/plots/QC/filter
 save(filtered_pbmc, file="/Users/laurenstein/Desktop/local_data/scRNAseq_10x_PBMC/data/filtered_pbmc.rds")
 ```
 
-
