@@ -13,7 +13,7 @@ filtered_phase_pmbc <- NormalizeData(filtered_pbmc)
 
 ```{r}
 # Load cell cycle markers
-load("data/cycle.rda")
+load("../data/cycle.rda")
 
 # Score cells for cell cycle
 filtered_phase_pmbc <- CellCycleScoring(filtered_phase_pmbc, 
@@ -70,19 +70,20 @@ DimPlot(filtered_phase_pmbc, label = TRUE) + NoLegend()
 # Single line code
 # pbmc <- CreateSeuratObject(pbmc_data) %>% PercentageFeatureSet(pattern = "^MT-", col.name = "percent.mt") %>% SCTransform(vars.to.regress = "percent.mt") %>% RunPCA() %>% FindNeighbors(dims = 1:30) %>% RunUMAP(dims = 1:30) %>% FindClusters()
 ```
+
 ```{r}
-VlnPlot(filtered_phase_pmbc, features = c("CD8A", "CD45", "Gfral", "Gdf15", "TGF", "NAG", "SBF", "MIC-", "MIC-1", "NAG-1"), 
+VlnPlot(filtered_phase_pmbc, features = c("CD8A", "CD45", "GFRAL", "GDF15", "PDF", "NAG", "SBF", "NAG-1"), 
     pt.size = 0.2)
 ```
 
 ```{r}
 # Visualize canonical marker genes on the sctransform embedding.
-FeaturePlot(filtered_phase_pmbc, features = c("CD8A", "CD123", "CD11b","MARCO", "GFRAL", "GDF15", "TGF", "Gfral", "GDF-15", "NOC2L"), pt.size = 0.2)
+FeaturePlot(filtered_phase_pmbc, features = c("CD8A", "CD123", "CD11b","MARCO", "GFRAL", "GDF15", "TGF", "NOC2L"), pt.size = 0.2)
 ```
 
 ```{r}
 # Visualize canonical marker genes on the sctransform embedding fro GRANULOCYTE.
-FeaturePlot(filtered_phase_pmbc, features = c("CD16", "CD45R", "CD93", "CD11", "MARCO", "CD11c", "CD24", "CD43"), pt.size = 0.2, 
+FeaturePlot(filtered_phase_pmbc, features = c("CD16", "PTPRC", "CD93", "ITGAL", "MARCO", "CD11c", "CD24", "CD43"), pt.size = 0.2, 
     ncol = 3)
 ```
 
