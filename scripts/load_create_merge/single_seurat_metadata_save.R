@@ -2,7 +2,13 @@ library(Seurat)
 library(dplyr)
 library(Matrix)
 
-options(warn = -1)
+# ******************************************************* #
+# *********** ALL FILES / PATHS ON PMACS HPC ************ #
+# ******************************************************* #
+
+
+options(warn = -1) #Warning about underscored features converted to dashes ignored
+
 # ============================ #
 # ==== Load the DATASET ====== #
 # ============================ #
@@ -29,11 +35,9 @@ df$percent.mt <- PercentageFeatureSet(df, pattern = "^MT-")
 df$mitoRatio <- df@meta.data$percent.mt / 100
 
 
-# ============================ #
-# ===== Save MetaData ======== #
-# ============================ #
-
-# Create .rds object to load at any time
+# ================================ #
+# ===== Save RDS/MetaData ======== #
+# ================================ #
 saveRDS(df, file="/home/steinlm/scRNAseq_10x_PBMC/data/initialfile_meta.rds")
 
 
