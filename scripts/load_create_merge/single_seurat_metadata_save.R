@@ -7,11 +7,8 @@
 # 2. TAR of RAW data with barcodes.tsv, matrix.mtx and features.tsv
 # 3. No biological/experimental groups added at this point
 # 4. Human Query
-# *** Note: RDS files at this step will all be named with the suffix seraut_meta_v1.rds *** #
+# *** NOTE: RDS files at this step will all be named with the suffix seraut_meta_v1.rds *** #
 
-# ******************************************************* #
-# *********** ALL FILES / PATHS ON PMACS HPC ************ #
-# ******************************************************* #
 
 library(Seurat)
 library(dplyr)
@@ -23,10 +20,13 @@ options(warn = -1) #Warning about underscored features converted to dashes ignor
 # ============================ #
 # ==== Load the DATASET ====== #
 # ============================ #
-df.data <- Read10X(data.dir = "/home/steinlm/scRNAseq_10x_PBMC/data/filtered_gene_bc_matrices/hg19/")
+# *** NOTE:  ALL FILES / PATHS ON PMACS HPC
+path =  "/home/steinlm/scRNAseq_10x_PBMC/data/filtered_gene_bc_matrices/hg19"
+df.data <- Read10X(data.dir = path)
 
 # Initialize the Seurat object with the raw (non-normalized data).
-df <- CreateSeuratObject(counts = df.data, project = "name", min.cells = 3, min.features = 200) #Make sure to change name of project to something relevant
+df <- CreateSeuratObject(counts = df.data, project = "pbmc", min.cells = 3, min.features = 200) #Make sure to change name of project to something relevant
+
 
 # ============================ #
 # === Create MetaData ======== #
@@ -49,7 +49,8 @@ df$mitoRatio <- df@meta.data$percent.mt / 100
 # ================================ #
 # ===== Save RDS/MetaData ======== #
 # ================================ #
-saveRDS(df, file="/home/steinlm/scRNAseq_10x_PBMC/data/pbmc_ser_meta_v1.rds") #Rename
+output_path = "/home/steinlm/scRNAseq_10x_PBMC/data/pbmc_ser_meta_v1.rds"
+saveRDS(df, file=output_path)
 
 
 

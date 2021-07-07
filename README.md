@@ -10,7 +10,7 @@
 ## Step 1: Read Input Data
 - `Read10x` function reads in the output of the 10x [cellranger](https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/what-is-cell-ranger) pipeline
 
-- Dependencies required: dplyr, Seurat, patchwork
+- Dependencies required: dplyr, Seurat, Matrix
 
 ## Step 2: Standard Pre-Processing
 ### Evaluate QC Metrics

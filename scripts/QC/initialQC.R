@@ -13,9 +13,9 @@ library(Seurat)
 library(ggplot2)
 
 # Set paths
-input_path = ""
-output_path = "/Users/laurenstein/Desktop/Code-A-Rama/scRNAseq_10x_PBMC/plots/unfiltered/"
-df <- readRDS(path)
+input_path = "/home/steinlm/scRNAseq_10x_PBMC/data/pbmc_ser_meta_v1.rds"
+output_path = "/home/steinlm/scRNAseq_10x_PBMC/plots/QC/unfiltered/"
+df <- readRDS(input_path)
 
 #Load metdata
 metadata <- df@meta.data
