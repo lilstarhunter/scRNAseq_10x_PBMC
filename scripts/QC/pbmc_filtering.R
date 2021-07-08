@@ -15,6 +15,7 @@ library(ggplot2)
 # Set paths
 input_path = "/home/steinlm/scRNAseq_10x_PBMC/data/pbmc_ser_meta_v1.rds"
 output_path = "/home/steinlm/scRNAseq_10x_PBMC/plots/QC/filtered/"
+data_output_path = "/home/steinlm/scRNAseq_10x_PBMC/data/pbmc_ser_filtered_v1.rds"
 
 df <- readRDS(input_path)
 
@@ -132,3 +133,6 @@ metadata %>%
   geom_hline(yintercept = 250)
 
 ggsave(paste(output_path,"GenesCorrUMI.png",sep=""))
+
+#Overwrite previous metadata file to save new naming
+saveRDS(filtered_df, file=data_output_path)
