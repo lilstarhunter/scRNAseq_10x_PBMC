@@ -5,19 +5,10 @@ library(Seurat)
 library(patchwork)
 
 # Load the PBMC dataset
-pbmc.data <- Read10X(data.dir = "filtered_gene_bc_matrices/hg19/")
+pbmc.data <- readRDS(data.dir = "filtered_gene_bc_matrices/hg19/")
+
 # Initialize the Seurat object with the raw (non-normalized data).
-pbmc <- CreateSeuratObject(counts = pbmc.data, project = "pbmc3k", min.cells = 3, min.features = 200)
-dim(pbmc)
-
-##========================================================##
-##========= Standard Pre-Processing Workflow =============##
-##========================================================##
-# Add column for mitochondrial counts
-pbmc[["percent.mt"]] <- PercentageFeatureSet(pbmc, pattern = "^MT-")
-
-#Show QC metrics for the first 5 cells with additional column
-head(pbmc@meta.data, 5)
+head(df)
 
 
 ##========================================================##

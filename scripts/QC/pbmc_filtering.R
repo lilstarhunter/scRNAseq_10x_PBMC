@@ -8,6 +8,8 @@
 
 library(Matrix)
 library(Seurat)
+library(dplyr)
+library(ggplot2)
 
 
 # Set paths
@@ -15,6 +17,17 @@ input_path = "/home/steinlm/scRNAseq_10x_PBMC/data/pbmc_ser_meta_v1.rds"
 output_path = "/home/steinlm/scRNAseq_10x_PBMC/plots/QC/filtered/"
 
 df <- readRDS(input_path)
+
+#Load metdata
+metadata <- df@meta.data
+
+# Rename columns
+metadata <- metadata %>%
+  dplyr::rename(seq_folder = orig.ident,
+                nUMI = nCount_RNA,
+                nGene = nFeature_RNA,
+                mitoRatio = mitoRatio)
+
 
 # Filter out low quality reads using selected thresholds - these will change with experiment
 filtered_df <- subset(x = df, 
@@ -43,7 +56,7 @@ keep_genes <- Matrix::rowSums(nonzero) >= 10
 filtered_counts <- counts[keep_genes, ]
 
 # Reassign to filtered Seurat object
-filtered_df <- CreateSeuratObject(filtered_counts, meta.data = filtered_pbmc@meta.data)
+filtered_df <- CreateSeuratObject(filtered_counts, meta.data = filtered_df@meta.data)
 
 # =============================== #
 # ===== REASSES QC METRIC ======= #
