@@ -7,8 +7,13 @@ library(cowplot)
 ```
 
 ```{r}
+input_path <- "/Users/laurenstein/Desktop/pbmc_local_data/pbmc_ser_filtered_v1.rds"
+filter_df <- readRDS(input_path)
+```
+
+```{r}
 # Normalize for cell cycle
-filtered_phase_pmbc <- NormalizeData(filtered_pbmc)
+filter_df <- NormalizeData(filter_df)
 ```
 
 ```{r}
@@ -16,31 +21,31 @@ filtered_phase_pmbc <- NormalizeData(filtered_pbmc)
 load("../data/cycle.rda")
 
 # Score cells for cell cycle
-filtered_phase_pmbc <- CellCycleScoring(filtered_phase_pmbc, 
+filter_df_cell <- CellCycleScoring(filter_df, 
                                  g2m.features = g2m_genes, 
                                  s.features = s_genes)
 
 # View cell cycle scores and phases assigned to cells                                 
-View(filtered_phase_pmbc@meta.data)    
+# View(filter_df_cell@meta.data)    
 ```
 
 ```{r}
 # Identify the most variable genes
-filtered_phase_pmbc <- FindVariableFeatures(filtered_phase_pmbc, 
+filter_df_cell<- FindVariableFeatures(filter_df_cell, 
                      selection.method = "vst",
                      nfeatures = 2000, 
                      verbose = FALSE)
 		     
 # Scale the counts
-filtered_phase_pmbc <- ScaleData(filtered_phase_pmbc)
+filter_df_cell <- ScaleData(filter_df_cell)
 ```
 
 ```{r}
 # Perform PCA
-filtered_phase_pmbc <- RunPCA(filtered_phase_pmbc)
+filter_df_cell <- RunPCA(filter_df_cell)
 
 # Plot the PCA colored by cell cycle phase
-DimPlot(filtered_phase_pmbc,
+DimPlot(filter_df_cell,
         reduction = "pca",
         group.by= "Phase",
         split.by = "Phase")
@@ -52,20 +57,21 @@ options(future.globals.maxSize = 4000 * 1024^2)
 ```
 
 ```{r}
-  filtered_phase_pmbc <- NormalizeData(filtered_phase_pmbc, verbose = TRUE)
-  filtered_phase_pmbc <- CellCycleScoring(filtered_phase_pmbc, g2m.features = g2m_genes, s.features = s_genes)
-  filtered_phase_pmbc <- SCTransform(filtered_phase_pmbc, vars.to.regress = c("mitoRatio"))
+  filter_df_cell <- NormalizeData(filter_df_cell, verbose = TRUE) #Required to prevent very high expressing genes from dominating 
+  filter_df_cell <- CellCycleScoring(filter_df_cell, g2m.features = g2m_genes, s.features = s_genes)
+  filter_df_cell <- SCTransform(filter_df_cell, vars.to.regress = c("mitoRatio"))
 
 ```
 
+
 ```{r}
 # These are now standard steps in the Seurat workflow for visualization and clustering
-filtered_phase_pmbc <- RunPCA(filtered_phase_pmbc, verbose = FALSE)
-filtered_phase_pmbc <- RunUMAP(filtered_phase_pmbc, dims = 1:10, verbose = FALSE)
+filter_df_cell <- RunPCA(filter_df_cell, verbose = FALSE)
+filter_df_cell <- RunUMAP(filter_df_cell, dims = 1:10, verbose = FALSE) #Visualization
 
-filtered_phase_pmbc <- FindNeighbors(filtered_phase_pmbc, dims = 1:10, verbose = FALSE)
-filtered_phase_pmbc <- FindClusters(filtered_phase_pmbc, verbose = FALSE)
-DimPlot(filtered_phase_pmbc, label = TRUE) + NoLegend()
+filter_df_cell <- FindNeighbors(filter_df_cell, dims = 1:10, verbose = FALSE)
+filter_df_cell <- FindClusters(filter_df_cell, verbose = FALSE)
+DimPlot(filter_df_cell, label = TRUE) + NoLegend()
 
 # Single line code
 # pbmc <- CreateSeuratObject(pbmc_data) %>% PercentageFeatureSet(pattern = "^MT-", col.name = "percent.mt") %>% SCTransform(vars.to.regress = "percent.mt") %>% RunPCA() %>% FindNeighbors(dims = 1:30) %>% RunUMAP(dims = 1:30) %>% FindClusters()

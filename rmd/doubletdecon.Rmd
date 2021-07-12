@@ -1,0 +1,60 @@
+
+
+Source for DoubletDecon: https://reader.elsevier.com/reader/sd/pii/S2666166720300721?token=54E7BD2698596E48DFDD25284E0CF24CA7C822B7FE4494F8E931998BECC34AB2882634F56E361DD47E39BEF88F32819F&originRegion=us-east-1&originCreation=20210708170223
+
+```{r}
+if(!require(devtools)){
+  install.packages("devtools") # If not already installed
+}
+devtools::install_github('EDePasquale/DoubletDecon')
+```
+
+```{r}
+# Load filtered files and associated metadata
+input_path = "/Users/laurenstein/Desktop/pbmc_local_data/pbmc_ser_filtered_v1.rds"
+df <- readRDS(input_path)
+
+#Load metdata
+metadata <- df@meta.data
+
+# Rename columns
+metadata <- metadata %>%
+  dplyr::rename(seq_folder = orig.ident,
+                nUMI = nCount_RNA,
+                nGene = nFeature_RNA,
+                mitoRatio = mitoRatio)
+
+```
+
+```{r}
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("BiocSingular")
+```
+```{r}
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("scran")
+```
+
+```{r}
+library(BiocSingular)
+set.seed(100)
+```
+```{r}
+library(scran)
+```
+```{r}
+ sce.mam
+```
+
+```{r}
+# Setting up the parameters for consistency with denoisePCA();
+# this can be changed depending on your feature selection scheme.
+dbl.dens <- computeDoubletDensity(sce.mam, subset.row=top.mam, 
+    d=ncol(reducedDim(sce.mam)))
+summary(dbl.dens)
+```
+

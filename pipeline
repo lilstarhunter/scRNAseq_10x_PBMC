@@ -5,6 +5,12 @@ Not included:
   
   
 STEP 1: Quality Control
+
+STEP 2: Filtering
+
+STEP 3: Normalization
+
+Selected SCnorm based on a review for THIS dataset as being the most
 DoubletDecon 
 output:
 
